@@ -1,0 +1,9 @@
+setup.py
+pygo/__init__.py
+pygo/global_optimizers.py
+pygo/optimization_problem.py
+pygo.egg-info/PKG-INFO
+pygo.egg-info/SOURCES.txt
+pygo.egg-info/dependency_links.txt
+pygo.egg-info/requires.txt
+pygo.egg-info/top_level.txt
