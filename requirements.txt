@@ -1,0 +1,9 @@
+wheel==0.34.2
+setuptools==50.3.2
+twine==3.2.0
+pytest==4.6.11
+pytest-arraydiff==0.3
+pytest-cov==2.10.1
+pytest==4.6.11
+pytest-runner==5.2
+coverage==5.3
