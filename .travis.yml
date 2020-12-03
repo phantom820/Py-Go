@@ -4,5 +4,5 @@ python:
 # command to run tests
 script:
   - source venv/bin/activate
-  - coverage run tests.py
+  - coverage run -m pytest tests/
   - bash <(curl -s https://codecov.io/bash)
