@@ -10,7 +10,7 @@ A python global optimization library for single-objective optimization, in which
 
 ### Installation instructions 
 - Download the following file https://github.com/phantom820/Py-Go/blob/master/dist/pygo-0.1.0-py3-none-any.whl and run the following command where you downloaded the file
-- pip install dist/pygo-0.1.0-py3-none-any.whl 
+- pip install pygo-0.1.0-py3-none-any.whl 
 
 ### Usage Examples
 for relevant examples see https://github.com/phantom820/Py-Go/tree/master/examples
