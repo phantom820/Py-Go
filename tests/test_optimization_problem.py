@@ -24,11 +24,18 @@ def test_optimization_problem():
 		other_expression = 'Maximize \nlambda x:x[:,0]**2-4*x[:,0]+4\nSubject to\n0<= x <=6'.split('\n')
 		assert expression==other_expression
 
-		# problem with several constraints
+		# minimization problem with several constraints
 		optimization_problem = op.OptimizationProblem('lambda x:(x[:,0]+2*x[:,1]-7)**2+(2*x[:,0]+x[:,1]-5)**2','min',
                               [-10,-10],[10,10])
 		expression = str(optimization_problem).split('\n')
 		other_expression = 'Minimize \nlambda x:(x[:,0]+2*x[:,1]-7)**2+(2*x[:,0]+x[:,1]-5)**2\nSubject to\n-10<= x0 <=10\n-10<= x1 <=10\n'
+		other_expression = other_expression.split('\n')
+		assert expression==other_expression
+
+		# maximization problem with several constraints
+		optimization_problem.mode = 'max'
+		expression = str(optimization_problem).split('\n')
+		other_expression = 'Maximize \nlambda x:(x[:,0]+2*x[:,1]-7)**2+(2*x[:,0]+x[:,1]-5)**2\nSubject to\n-10<= x0 <=10\n-10<= x1 <=10\n'
 		other_expression = other_expression.split('\n')
 		assert expression==other_expression
 
