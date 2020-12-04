@@ -6,6 +6,7 @@ A python global optimization library for single-objective optimization, in which
 
 ### Requirements
 - python3.7 or greater
+- pip
 
 ### Installation instructions 
 - git clone https://github.com/phantom820/Py-Go
