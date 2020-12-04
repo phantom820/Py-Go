@@ -13,8 +13,13 @@ A python global optimization library for single-objective optimization, in which
 - cd Py-Go
 - pip install dist/pygo-0.1.0-py3-none-any.whl 
 
-### Implemented optimizers
+### Implemented optimization algorithms
 - particle swarm optimization
+
+### Algorithms to be added
+- genetic algorithm
+- differential evolution
+
 
 ### Examples
 for relevant examples see https://github.com/phantom820/Py-Go/tree/master/examples
