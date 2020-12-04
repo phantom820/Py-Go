@@ -2,7 +2,7 @@ import numpy as np
 
 class GlobalOptimizer:
     
-    def pso(self,optimization_problem,N=100,c1=2,c2=2,w = 0.6 ,max_iter =300,tol=1e-3):
+    def pso(self,optimization_problem,N=100,c1=2,c2=2,w = 0.6 ,max_iter =300,tol=1e-4):
         ''' 
             basic pso optimization we have fixed inertia the parameters are as follows
             
@@ -14,7 +14,7 @@ class GlobalOptimizer:
             w (float) between 0 and 1 which indicates the inertial of the particle or what fraction of prior 
             velocity we add to get to next velocity values default 0.6
             max_iter (int): maximum number of iterations to run the algorithm for default = 300
-            tol (float) : used as convergence criteria check if we have not converged to a solution uses default 1e3
+            tol (float) : used as convergence criteria check if we have not converged to a solution uses default 1e-4
             max of abs difference  g(k)-g(k-1)
         '''
         
@@ -141,7 +141,7 @@ class GlobalOptimizer:
                 
                 t = t+1
                 
-    def adaptive_pso(self,optimization_problem,N=100,c1=2,c2=2,w_init = 0.9 ,max_iter =300,tol=1e-3):
+    def adaptive_pso(self,optimization_problem,N=100,c1=2,c2=2,w_init = 0.9 ,max_iter =300,tol=1e-4):
         ''' 
             adaptive pso optimization we have linearly dropping inertia the parameters are as follows
             
@@ -151,9 +151,9 @@ class GlobalOptimizer:
             c1 (int) range(0,4]: personal component of particle scales in direction of personal best default = 2,
             c2 (int) range(0,4]: social component of particle scales in direction of global best default = 2
             w_init (float) initial weight value close to 1 and the w will be linearly decreased using equal 
-            sized steps from w_init to 0.4 where each step (w_init-0.4)/max_iter
-            max_iter (int): maximum number of iterations to run the algorithm for 
-            tol (float) : used as convergence criteria check if we have not converged to a solution uses
+            sized steps from w_init to 0.4 where each step (w_init-0.6)/max_iter 
+            max_iter (int): maximum number of iterations to run the algorithm for default 300 
+            tol (float) : used as convergence criteria check if we have not converged to a solution uses default 1e-4
             max of abs difference og g(k)-g(k-1)
         '''
         
@@ -164,7 +164,7 @@ class GlobalOptimizer:
         if c2<0 or c2>4:
             raise Exception('c2 must be in range(0,4]')
         
-        if w_init<=0.4 and w_init>1:
+        if w_init<=0.6 and w_init>1:
             raise Exception('w(inertia) must be in range (0.4,1]')
         
         if max_iter<=0:
@@ -177,6 +177,7 @@ class GlobalOptimizer:
         f = optimization_problem.objective_function
         mode = optimization_problem.mode
         w = np.linspace(w_init,0.4,max_iter)
+        
         t = 0
         
         # minimization problem
