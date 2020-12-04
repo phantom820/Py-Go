@@ -13,4 +13,4 @@ A python global optimization library for single-objective optimization, in which
 - particle swarm optimization
 
 ### Examples
-for relevant examples see ![Alt text](https://github.com/phantom820/Py-Go/tree/master/examples)
+for relevant examples see https://github.com/phantom820/Py-Go/tree/master/examples
