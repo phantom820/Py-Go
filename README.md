@@ -16,10 +16,10 @@ A python global optimization library for single-objective optimization, in which
 for relevant examples see https://github.com/phantom820/Py-Go/tree/master/examples
 
 ### Implemented optimization algorithms
-- particle swarm optimization
+- particle swarm optimization (PSO)
+- genetic algorithm (GA)
 
 ### Algorithms to be added
-- genetic algorithm
 - differential evolution
 
 
