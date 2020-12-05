@@ -1,7 +1,7 @@
 import numpy as np
 
 class GlobalOptimizer:
-    
+
     def pso(self,optimization_problem,N=100,c1=2,c2=2,w = 0.6 ,max_iter =300,tol=1e-4):
         ''' 
             basic pso optimization we have fixed inertia the parameters are as follows
@@ -283,5 +283,176 @@ class GlobalOptimizer:
                     print('Failed to converge after',max_iter,'iterations')
                     return g_k,f_k
                 
+    def ga(self,optimization_problem,N=100,m=10,mutation=False,max_iter=300,tol=1e-3):
+        
+        ''' genetic algorithm we evolve the population by replacing m least fit individuals with offspring
+            of mating pair using tournament selection parameters are as follows
+            
+            optimization_problem (OptimizationProblem) optimization problem object with objective function and
+                constraints
+            
+            N (int): number of indivduals in population default 100
+            m (int): number of individuals that are replaced each generation default 10
+            mutation (bool): indicates whether mutation occurs in the population or not
+            max_iter (int): indicates maximum number of generations that can occur
+            tol (float): used to check convergence by using standard deviation of function values
+            
+        '''
+        n = len(optimization_problem.lower_constraints)
+        l = optimization_problem.lower_constraints
+        u = optimization_problem.upper_constraints
+        f = optimization_problem.objective_function
+        mode = optimization_problem.mode
+        
+        p = np.zeros((N,n+1))
+        p[:,:n] = l+(u-l)*np.random.uniform(0,1,(N,n))
+        p[:,n] = f(p[:,:n])
+        c = np.zeros((m,n+1))
+    
+        # minimization problem
+        if mode=='min':
+            for g in range(max_iter):
+                # sorting in descending order so we later replace top m
+                p = p[np.argsort(p[:,-1])[::-1]]
                 
+                for k in range(0,m,2):
+                    # we will pick the pair using this
+                    L = np.zeros(2).astype(int) 
+                    n1 , n2 = 1,1
+                    
+                    # tournament selection generate 2 indices and compare
+                    for j in range(n):
+                        while n1==n2:
+                            n1 = int(np.random.uniform(0,1)*N)
+                            n2 = int(np.random.uniform(0,1)*N)
+
+                        if p[n1,n]<p[n1,n]:
+                            L[j] = n1
+
+                        else:
+                            L[j] = n2
+                        n1 = n2
+
+                    # now do the crossing over
+                    alpha = -1/2+(2)*np.random.uniform(0,1,n)
+                    beta = -1/2+(2)*np.random.uniform(0,1,n)
+                    
+                    x = alpha*(p[L[0],:n])+(1-alpha)*(p[L[1],:n])
+                    y = (1-beta)*(p[L[0],:n])+beta*(p[L[1],:n])
+                    
+                    # if mutation is allowed
+                    if mutation==True:
+                        r1 = np.random.uniform(0,1)
+                        r2 = np.random.uniform(0,1)
+                        
+                        if r1<0.1:
+                            idx = int(np.random.uniform(0,1)*n)
+                            x[idx] = x[idx]*np.random.uniform(0,1)
+                        
+                        if r2<0.1:
+                            idy = int(np.random.uniform(0,1)*n)
+                            y[idy] = y[idy]*np.random.uniform(0,1)
+                        
+                    # children       
+                    c[k,:n] = x
+                    c[k+1,:n] = y
+                    
+                    # infeasible solutions
+                    idl = np.where((c[:,:n]<l))[0]
+                    idu = np.where((c[:,:n]>u))[0]
+
+                    # maintain feasibility
+                    if len(idl)>0:
+                        c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                    if len(idu)>0:
+                        c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+
+                    c[k:k+2,n] = f(c[k:k+2,:])            
+
+                p[:m,:] = c
+                p[:,n] = f(p[:,:n])
                 
+                if np.std(p[:,-1])<tol:
+                    p = p[np.argsort(p[:,-1])[::-1]]  
+                    return p[-1,:n],p[-1,-1]
+                    
+            
+            print('Failed to converge after',max_iter,'iterations')
+            p = p[np.argsort(p[:,-1])[::-1]]  
+            return p[-1,:n],p[-1,-1]
+        
+        # maximization problem
+        elif mode=='max':
+            for g in range(max_iter):
+                # sorting in asscending order so we later replace top m
+                p = p[np.argsort(p[:,-1])]
+                
+                for k in range(0,m,2):
+                    # we will pick the pair using this
+                    L = np.zeros(2).astype(int) 
+                    n1 , n2 = 1,1
+                    
+                    # tournament selection generate 2 indices and compare
+                    for j in range(n):
+                        while n1==n2:
+                            n1 = int(np.random.uniform(0,1)*N)
+                            n2 = int(np.random.uniform(0,1)*N)
+
+                        if p[n1,n]>p[n1,n]:
+                            L[j] = n1
+
+                        else:
+                            L[j] = n2
+                        n1 = n2
+
+                    # now do the crossing over
+                    alpha = -1/2+(2)*np.random.uniform(0,1,n)
+                    beta = -1/2+(2)*np.random.uniform(0,1,n)
+                    
+                    x = alpha*(p[L[0],:n])+(1-alpha)*(p[L[1],:n])
+                    y = (1-beta)*(p[L[0],:n])+beta*(p[L[1],:n])
+                    
+                    # if mutation is allowed
+                    if mutation==True:
+                        r1 = np.random.uniform(0,1)
+                        r2 = np.random.uniform(0,1)
+                        
+                        if r1<0.1:
+                            idx = int(np.random.uniform(0,1)*n)
+                            x[idx] = x[idx]*np.random.uniform(0,1)
+                        
+                        if r2<0.1:
+                            idy = int(np.random.uniform(0,1)*n)
+                            y[idy] = y[idy]*np.random.uniform(0,1)
+                        
+                    # children       
+                    c[k,:n] = x
+                    c[k+1,:n] = y
+                    
+                    # infeasible solutions
+                    idl = np.where((c[:,:n]<l))[0]
+                    idu = np.where((c[:,:n]>u))[0]
+
+                    # maintain feasibility
+                    if len(idl)>0:
+                        c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                    if len(idu)>0:
+                        c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+
+                    c[k:k+2,n] = f(c[k:k+2,:])            
+
+                p[:m,:] = c
+                p[:,n] = f(p[:,:n])
+                
+                if np.std(p[:,-1])<tol:
+                    p = p[np.argsort(p[:,-1])]  
+                    return p[-1,:n],p[-1,-1]
+                    
+            
+            print('Failed to converge after',max_iter,'iterations')
+            p = p[np.argsort(p[:,-1])]  
+            return p[-1,:n],p[-1,-1]
+                
+                    
