@@ -454,5 +454,132 @@ class GlobalOptimizer:
             print('Failed to converge after',max_iter,'iterations')
             p = p[np.argsort(p[:,-1])]  
             return p[-1,:n],p[-1,-1]
+
+    
+    def de(self,optimization_problem,N=100,F = 0.8, CR = 0.9, max_iter = 300, tol=1e-4):
+        
+        ''' differential evolution 
+            optimization_problem (OptimizationProblem) optimization problem object with objective function and
+            constraints
+            N (int) : number of candidate solutions
+            F (float) range(0,2): differential weight default 0.8
+            CR (float) range(0,1): crossover probability
+            max_iter (int): maximum number of iterations to run the algorithm for default = 300
+            tol (float) : used as convergence criteria check if we have not converged to a solution  1e-4
+            checks standard deviation
+        
+        '''
+        
+        if F<0 or F>2:
+            raise Exception('F must be in range [0,2] (differential weight)')
+            
+        if CR<0 or CR>1:
+            raise Exception('CR muste be in range [0,1]')
+            
+        n = len(optimization_problem.lower_constraints)
+        l = optimization_problem.lower_constraints
+        u = optimization_problem.upper_constraints
+        f = optimization_problem.objective_function
+        mode = optimization_problem.mode
+
+        
+        if mode == 'min':
+            p = np.zeros((N,n+1))
+            p[:,:n] = (l)+(u-l)*np.random.uniform(0,1,(N,n))
+            p[:,n] = f(p[:,:n])
+            
+            for g in range(max_iter):
+                y = np.zeros((N,n+1))
+                for i in range(N):
+                    # generate candidates
+                    while True:
+                        c = np.random.uniform(0,N,3).astype(int)    
+                        if len(np.unique(c))==3 and i not in c:
+                            break
+                    # compute the agent's new position
+                    a = p[c[0],:n]
+                    b = p[c[1],:n]
+                    c = p[c[2],:n]
+
+                    R = int(np.random.uniform(0,n))
+                    r = np.random.uniform(0,1,n)
+                    idl = np.where(r<CR)[0]
+                    idu = np.where(r>CR)[0]
+                    y[i,idl] = a[idl]+F*(b[idl]-a[idl])
+                    y[i,idu] = p[i,idu]
+                    y[i,R] = a[R]+F*(b[R]-a[R]) 
+
+                idl = np.where((y[:,:n]<l))[0]
+                idu = np.where((y[:,:n]>u))[0]
+
+                # maintain feasibility
+                if len(idl)>0:
+                    y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                if len(idu)>0:
+                    y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+
+                # compute new function values
+                y[:,n] =f(y[:,:n])
+                idx = (y[:,n]<=p[:,n])
+                p[idx] = y[idx]
+                
+                if np.std(p[:,-1])<tol:
+                    p = p[np.argsort(p[:,-1])]
+                    return p[0,:n],p[0,-1]
+            print('Failed to converger after',max_iter,'iterations')
+            p = p[np.argsort(p[:,-1])]
+            return p[0,:n],p[0,-1]
+        
+        # maximization problem
+        elif mode == 'max':
+            p = np.zeros((N,n+1))
+            p[:,:n] = (l)+(u-l)*np.random.uniform(0,1,(N,n))
+            p[:,n] = f(p[:,:n])
+            
+            for g in range(max_iter):
+                y = np.zeros((N,n+1))
+                for i in range(N):
+                    # generate candidates
+                    while True:
+                        c = np.random.uniform(0,N,3).astype(int)    
+                        if len(np.unique(c))==3 and i not in c:
+                            break
+                    # compute the agent's new position
+                    a = p[c[0],:n]
+                    b = p[c[1],:n]
+                    c = p[c[2],:n]
+
+                    R = int(np.random.uniform(0,n))
+                    r = np.random.uniform(0,1,n)
+                    idl = np.where(r<CR)[0]
+                    idu = np.where(r>CR)[0]
+                    y[i,idl] = a[idl]+F*(b[idl]-a[idl])
+                    y[i,idu] = p[i,idu]
+                    y[i,R] = a[R]+F*(b[R]-a[R]) 
+
+                idl = np.where((y[:,:n]<l))[0]
+                idu = np.where((y[:,:n]>u))[0]
+
+                # maintain feasibility
+                if len(idl)>0:
+                    y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                if len(idu)>0:
+                    y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+
+                # compute new function values
+                y[:,n] =f(y[:,:n])
+                idx = (y[:,n]>=p[:,n])
+                p[idx] = y[idx]
+                
+                if np.std(p[:,-1])<tol:
+                    p = p[np.argsort(p[:,-1])]
+                    return p[-1,:n],p[-1,-1]
+                
+            print('Failed to converger after',max_iter,'iterations')
+            p = p[np.argsort(p[:,-1])]
+            return p[-1,:n],p[-1,-1]
+    
                 
                     
