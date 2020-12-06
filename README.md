@@ -18,9 +18,7 @@ for relevant examples see https://github.com/phantom820/Py-Go/tree/master/exampl
 ### Implemented optimization algorithms
 - particle swarm optimization (PSO)
 - genetic algorithm (GA)
-
-### Algorithms to be added
-- differential evolution
+- differential evolution (DE)
 
 
 
