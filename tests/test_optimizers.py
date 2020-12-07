@@ -103,7 +103,7 @@ def test_de():
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution
 		global_optimizer = go.GlobalOptimizer()
-		x_star,f_star = global_optimizer.de(opp)
+		x_star,f_star = global_optimizer.de(opp,N=300)
 		x_star_true = 2
 		err = np.round(max(abs(x_star_true-x_star)),2)
 		assert err<=1e-1
@@ -111,7 +111,7 @@ def test_de():
 		# check pso with given 1d maximization problem we should be close to true solution
 		opp.mode = 'max'
 		global_optimizer = go.GlobalOptimizer()
-		x_star,f_star = global_optimizer.de(opp)
+		x_star,f_star = global_optimizer.de(opp,N=400)
 		x_star = np.round(x_star,2)
 		x_star_true = 6
 		err = np.round(max(abs(x_star_true-x_star)),2)
@@ -122,7 +122,7 @@ def test_de():
                               [-1.5,-3],[4,4])
 
 		global_optimizer = go.GlobalOptimizer()
-		x_star,f_star = global_optimizer.de(opp)
+		x_star,f_star = global_optimizer.de(opp,N=400)
 		x_star = np.round(x_star,2)		
 		x_star_true = np.array([-0.54,-1.54])
 		err = np.round(max(abs(x_star_true-x_star)),2)
