@@ -28,6 +28,7 @@ class OptimizationProblem:
     '''
     
     def __init__(self,expression,mode,lower_constraints,upper_constraints):
+        self.state = 1
         if type(expression)!= str:
             raise TypeError('Only strings are allowed for function expressions')
             
