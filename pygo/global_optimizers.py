@@ -2,7 +2,7 @@ import numpy as np
 
 class GlobalOptimizer:
 
-    def pso(self,optimization_problem,N=100,c1=2,c2=2,w = 0.6 ,max_iter =300,tol=1e-4):
+    def pso(self,optimization_problem,N=100,c1=2,c2=2,w = 0.6 ,max_iter =300,tol=1e-4,trajectory=False):
         ''' 
             basic pso optimization we have fixed inertia the parameters are as follows
             
@@ -16,6 +16,7 @@ class GlobalOptimizer:
             max_iter (int): maximum number of iterations to run the algorithm for default = 300
             tol (float) : used as convergence criteria check if we have not converged to a solution uses default 1e-4
             max of abs difference  g(k)-g(k-1)
+            trajectory (bool) : whether to return a 2d array of optimal solution and f value after each iteration 
         '''
         
         # just check input parameters are ok
@@ -27,13 +28,15 @@ class GlobalOptimizer:
         
         if w<0 or w>1:
             raise Exception('w(inertia) must be in range (0,1]')
-            
-            
+        
+        
+
         n = len(optimization_problem.lower_constraints)
         l = optimization_problem.lower_constraints
         u = optimization_problem.upper_constraints
         f = optimization_problem.objective_function
         mode = optimization_problem.mode
+        feasibility = optimization_problem.state
         t = 0
         
         # minimization problem
@@ -48,7 +51,12 @@ class GlobalOptimizer:
             
             # best function value so far
             f_k = p[np.argsort(p[:,-1])[0]][-1]
-         
+
+            # function values
+            x_path = np.zeros((1,len(g_k)))
+            x_path[0] = g_k
+            y_path = np.array([f_k]) 
+
             while True:
                 r1 = np.random.uniform(0,1,(N,n))
                 r2 = np.random.uniform(0,1,(N,n))
@@ -58,34 +66,50 @@ class GlobalOptimizer:
                 idl = np.where((x[:,:n]<l))[0]
                 idu = np.where((x[:,:n]>u))[0]
 
-                # maintain feasibility
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                # maintain feasibility if allowed
+                if feasibility==1:
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 x[:,n] = f(x[:,:n])
                 
                 # update personal best
                 idx = (x[:,n]<p[:,n])
                 p[idx] = x[idx]
-                
+
+                # new potential solution
+                g_k_new = p[np.argsort(p[:,-1])[0]][:n]
+                f_k_new = p[np.argsort(p[:,-1])[0]][-1]
+
+                # add to path
+                x_path = np.vstack((x_path,g_k_new))
+                y_path = np.append(y_path,f_k_new)
+
                 # update global best if we have an improvement
-                if p[np.argsort(p[:,-1])[0]][-1]<f_k:
+                if f_k_new<f_k:
                     g_k_copy = np.copy(g_k)
-                    g_k = p[np.argsort(p[:,-1])[0]][:n] 
-                    f_k = p[np.argsort(p[:,-1])[0]][-1]
+                    g_k = g_k_new 
+                    f_k = f_k_new
                     
+
                     # compute difference for convergence
                     err = np.max(np.abs(g_k-g_k_copy)) 
 
                     if err!=0 and err<tol:
-                        return g_k,f_k
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        else:
+                            return g_k,f_k
 
                     if t>max_iter:
                         print('Failed to converge after',max_iter,'iterations')
-                        return g_k,f_k
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        else:
+                            return g_k,f_k
 
                 t = t+1
                 
@@ -101,7 +125,12 @@ class GlobalOptimizer:
             
             # best function value so far
             f_k = p[np.argsort(p[:,-1])[-1]][-1]
-         
+
+            # function values
+            x_path = np.zeros((1,len(g_k)))
+            x_path[0] = g_k
+            y_path = np.array([f_k]) 
+
             while True:
                 r1 = np.random.uniform(0,1,(N,n))
                 r2 = np.random.uniform(0,1,(N,n))
@@ -112,36 +141,53 @@ class GlobalOptimizer:
                 idu = np.where((x[:,:n]>u))[0]
 
                 # maintain feasibility
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility==1:
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
-                x[:,n] = f(x[:,:n])
-                
+                    x[:,n] = f(x[:,:n])
+                    
                 # update personal best
                 idx = (x[:,n]>p[:,n])
                 p[idx] = x[idx]
                     
+                # new potential solution
+                g_k_new = p[np.argsort(p[:,-1])[-1]][:n]
+                f_k_new = p[np.argsort(p[:,-1])[-1]][-1]
+
+                # add to path
+                x_path = np.vstack((x_path,g_k_new))
+                y_path = np.append(y_path,f_k_new)
+                
                 # update global best if we have an improvement
-                if p[np.argsort(p[:,-1])[-1]][-1]>f_k:
-                    g_k_copy = g_k.copy()
-                    g_k = p[np.argsort(p[:,-1])[-1]][:n] 
-                    f_k = p[np.argsort(p[:,-1])[-1]][-1]
+                if f_k_new>f_k:
+                    g_k_copy = np.copy(g_k)
+                    g_k = g_k_new 
+                    f_k = f_k_new
                     
+
                     # compute difference for convergence
                     err = np.max(np.abs(g_k-g_k_copy)) 
+
                     if err!=0 and err<tol:
-                        return g_k,f_k
-                
-                if t>max_iter:
-                    print('Failed to converge after',max_iter,'iterations')
-                    return g_k,f_k
-                
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        else:
+                            return g_k,f_k
+
+                    if t>max_iter:
+                        print('Failed to converge after',max_iter,'iterations')
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        else:
+                            return g_k,f_k
+
                 t = t+1
                 
-    def adaptive_pso(self,optimization_problem,N=100,c1=2,c2=2,w_init = 0.9 ,max_iter =300,tol=1e-4):
+    def adaptive_pso(self,optimization_problem,N=100,c1=2,c2=2,w_init = 0.9 ,max_iter =300,tol=1e-4,trajectory=False):
         ''' 
             adaptive pso optimization we have linearly dropping inertia the parameters are as follows
             
@@ -155,6 +201,7 @@ class GlobalOptimizer:
             max_iter (int): maximum number of iterations to run the algorithm for default 300 
             tol (float) : used as convergence criteria check if we have not converged to a solution uses default 1e-4
             max of abs difference og g(k)-g(k-1)
+             trajectory (bool) : whether to return a 2d array of optimal solution and f value after each iteration 
         '''
         
         # just check input parameters are ok
@@ -176,6 +223,8 @@ class GlobalOptimizer:
         u = optimization_problem.upper_constraints
         f = optimization_problem.objective_function
         mode = optimization_problem.mode
+        feasibility = optimization_problem.state
+
         w = np.linspace(w_init,0.4,max_iter)
         
         t = 0
@@ -192,6 +241,12 @@ class GlobalOptimizer:
             
             # best function value so far
             f_k = p[np.argsort(p[:,-1])[0]][-1]
+
+
+            # function values
+            x_path = np.zeros((1,len(g_k)))
+            x_path[0] = g_k
+            y_path = np.array([f_k]) 
          
             while True:
                 r1 = np.random.uniform(0,1,(N,n))
@@ -203,33 +258,50 @@ class GlobalOptimizer:
                 idu = np.where((x[:,:n]>u))[0]
 
                 # maintain feasibility
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility:
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 x[:,n] = f(x[:,:n])
-                
-                # update personal best
+
+                   # update personal best
                 idx = (x[:,n]<p[:,n])
                 p[idx] = x[idx]
                 
+
+                # new potential solution
+                g_k_new = p[np.argsort(p[:,-1])[0]][:n]
+                f_k_new = p[np.argsort(p[:,-1])[0]][-1]
+                
+                 # add to path
+                x_path = np.vstack((x_path,g_k_new))
+                y_path = np.append(y_path,f_k_new)
+
                 # update global best if we have an improvement
-                if p[np.argsort(p[:,-1])[0]][-1]<f_k:
+                if f_k_new<f_k:
                     g_k_copy = np.copy(g_k)
-                    g_k = p[np.argsort(p[:,-1])[0]][:n] 
-                    f_k = p[np.argsort(p[:,-1])[0]][-1]
-                    
+                    g_k = g_k_new 
+                    f_k = f_k_new
                     # compute difference for convergence
                     err = np.max(np.abs(g_k-g_k_copy)) 
 
                     if err!=0 and err<tol:
-                        return g_k,f_k
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        
+                        else:
+                            return g_k,f_k
                 t = t+1
                 if t>=max_iter:
                     print('Failed to converge after',max_iter,'iterations')
-                    return g_k,f_k
+                    if trajectory:
+                        return g_k,f_k,x_path,y_path
+                    
+                    else:
+                        return g_k,f_k
 
             
                 
@@ -245,6 +317,10 @@ class GlobalOptimizer:
             
             # best function value so far
             f_k = p[np.argsort(p[:,-1])[-1]][-1]
+
+            x_path = np.zeros((1,len(g_k)))
+            x_path[0] = g_k
+            y_path = np.array([f_k]) 
          
             while True:
                 r1 = np.random.uniform(0,1,(N,n))
@@ -256,11 +332,12 @@ class GlobalOptimizer:
                 idu = np.where((x[:,:n]>u))[0]
 
                 # maintain feasibility
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility:
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 x[:,n] = f(x[:,:n])
                 
@@ -268,22 +345,36 @@ class GlobalOptimizer:
                 idx = (x[:,n]>p[:,n])
                 p[idx] = x[idx]
                     
+              # new potential solution
+                g_k_new = p[np.argsort(p[:,-1])[-1]][:n]
+                f_k_new = p[np.argsort(p[:,-1])[-1]][-1]
+
+                # add to path
+                x_path = np.vstack((x_path,g_k_new))
+                y_path = np.append(y_path,f_k_new)
+                
                 # update global best if we have an improvement
-                if p[np.argsort(p[:,-1])[-1]][-1]>f_k:
-                    g_k_copy = g_k.copy()
-                    g_k = p[np.argsort(p[:,-1])[-1]][:n] 
-                    f_k = p[np.argsort(p[:,-1])[-1]][-1]
+                if f_k_new>f_k:
+                    g_k_copy = np.copy(g_k)
+                    g_k = g_k_new 
+                    f_k = f_k_new
                     
                     # compute difference for convergence
                     err = np.max(np.abs(g_k-g_k_copy)) 
                     if err!=0 and err<tol:
-                        return g_k,f_k
+                        if trajectory:
+                            return g_k,f_k,x_path,y_path
+                        else:
+                            return g_k,f_k
                 t = t+1
                 if t>=max_iter:
                     print('Failed to converge after',max_iter,'iterations')
-                    return g_k,f_k
+                    if trajectory:
+                        return g_k,f_k,x_path,y_path
+                    else:
+                        return g_k,f_k
                 
-    def ga(self,optimization_problem,N=100,m=10,mutation=False,max_iter=300,tol=1e-3):
+    def ga(self,optimization_problem,N=100,m=10,mutation=False,max_iter=300,tol=1e-3,trajectory=False):
         
         ''' genetic algorithm we evolve the population by replacing m least fit individuals with offspring
             of mating pair using tournament selection parameters are as follows
@@ -302,22 +393,32 @@ class GlobalOptimizer:
         l = optimization_problem.lower_constraints
         u = optimization_problem.upper_constraints
         f = optimization_problem.objective_function
+        feasibility = optimization_problem.state
         mode = optimization_problem.mode
         
         p = np.zeros((N,n+1))
         p[:,:n] = l+(u-l)*np.random.uniform(0,1,(N,n))
         p[:,n] = f(p[:,:n])
         c = np.zeros((m,n+1))
-    
+        
+        x_path = np.zeros((0,n))
+        y_path = np.array([])
+
         # minimization problem
         if mode=='min':
             for g in range(max_iter):
                 # sorting in descending order so we later replace top m
                 p = p[np.argsort(p[:,-1])[::-1]]
+
+                x_g = p[-1,:n]
+                y_g = p[-1,-1]
+
+                x_path = np.vstack((x_path,x_g))
+                y_path = np.append(y_path,y_g)
                 
                 for k in range(0,m,2):
                     # we will pick the pair using this
-                    L = np.zeros(2).astype(int) 
+                    L = np.zeros(n).astype(int) 
                     n1 , n2 = 1,1
                     
                     # tournament selection generate 2 indices and compare
@@ -362,31 +463,55 @@ class GlobalOptimizer:
                     idu = np.where((c[:,:n]>u))[0]
 
                     # maintain feasibility
-                    if len(idl)>0:
-                        c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                    if feasibility==1:
+                        if len(idl)>0:
+                            c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                    if len(idu)>0:
-                        c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                        if len(idu)>0:
+                            c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
-                    c[k:k+2,n] = f(c[k:k+2,:])            
+                    c[k:k+2,n] = f(c[k:k+2,:n])            
 
                 p[:m,:] = c
                 p[:,n] = f(p[:,:n])
                 
                 if np.std(p[:,-1])<tol:
                     p = p[np.argsort(p[:,-1])[::-1]]  
-                    return p[-1,:n],p[-1,-1]
+                    x_g = p[-1,:n]
+                    y_g = p[-1,-1]
+                    x_path = np.vstack((x_path,x_g))
+                    y_path = np.append(y_path,y_g)
+                    if trajectory:
+                        return x_g,y_g,x_path,y_path
+                    
+                    else:
+                        return x_g,y_g
                     
             
             print('Failed to converge after',max_iter,'iterations')
-            p = p[np.argsort(p[:,-1])[::-1]]  
-            return p[-1,:n],p[-1,-1]
-        
+            p = p[np.argsort(p[:,-1])[::-1]]
+
+            x_g = p[-1,:n]
+            y_g = p[-1,-1]
+            x_path = np.vstack((x_path,x_g))
+            y_path = np.append(y_path,y_g)
+            if trajectory:
+                return x_g,y_g,x_path,y_path
+            
+            else:
+                return x_g,y_g  
+            
         # maximization problem
         elif mode=='max':
             for g in range(max_iter):
                 # sorting in asscending order so we later replace top m
                 p = p[np.argsort(p[:,-1])]
+
+                x_g = p[-1,:n]
+                y_g = p[-1,-1]
+
+                x_path = np.vstack((x_path,x_g))
+                y_path = np.append(y_path,y_g)
                 
                 for k in range(0,m,2):
                     # we will pick the pair using this
@@ -435,29 +560,46 @@ class GlobalOptimizer:
                     idu = np.where((c[:,:n]>u))[0]
 
                     # maintain feasibility
-                    if len(idl)>0:
-                        c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                    if feasibility:
+                        if len(idl)>0:
+                            c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                    if len(idu)>0:
-                        c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                        if len(idu)>0:
+                            c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
-                    c[k:k+2,n] = f(c[k:k+2,:])            
+                    c[k:k+2,n] = f(c[k:k+2,:n])            
 
                 p[:m,:] = c
                 p[:,n] = f(p[:,:n])
                 
                 if np.std(p[:,-1])<tol:
-                    p = p[np.argsort(p[:,-1])]  
-                    return p[-1,:n],p[-1,-1]
+                    p = p[np.argsort(p[:,-1])] 
+                    x_g = p[-1,:n]
+                    y_g = p[-1,-1]
+                    x_path = np.vstack((x_path,x_g))
+                    y_path = np.append(y_path,y_g)
+                    if trajectory:
+                        return x_g,y_g,x_path,y_path
                     
-            
+                    else:
+                        return x_g,y_g  
+
             print('Failed to converge after',max_iter,'iterations')
             p = p[np.argsort(p[:,-1])]  
-            return p[-1,:n],p[-1,-1]
 
+
+            x_g = p[-1,:n]
+            y_g = p[-1,-1]
+            x_path = np.vstack((x_path,x_g))
+            y_path = np.append(y_path,y_g)
+            if trajectory:
+                return x_g,y_g,x_path,y_path
+            
+            else:
+                return x_g,y_g  
+            
     
-    def de(self,optimization_problem,N=100,F = 0.8, CR = 0.9, max_iter = 300, tol=1e-4):
-        
+    def de(self,optimization_problem,N=100,F = 0.8, CR = 0.9, max_iter = 300, tol=1e-4,trajectory=False):        
         ''' differential evolution 
             optimization_problem (OptimizationProblem) optimization problem object with objective function and
             constraints
@@ -480,14 +622,18 @@ class GlobalOptimizer:
         l = optimization_problem.lower_constraints
         u = optimization_problem.upper_constraints
         f = optimization_problem.objective_function
+        feasibility = optimization_problem.state
         mode = optimization_problem.mode
 
-        
+        x_path = np.zeros((1,n))
+        y_path = np.array([])
+
         if mode == 'min':
             p = np.zeros((N,n+1))
             p[:,:n] = (l)+(u-l)*np.random.uniform(0,1,(N,n))
             p[:,n] = f(p[:,:n])
-            
+            x_path[0] = p[0,:n]
+            y_path = np.append(y_path,p[0,-1])
             for g in range(max_iter):
                 y = np.zeros((N,n+1))
                 for i in range(N):
@@ -513,30 +659,48 @@ class GlobalOptimizer:
                 idu = np.where((y[:,:n]>u))[0]
 
                 # maintain feasibility
-                if len(idl)>0:
-                    y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility:
+                    if len(idl)>0:
+                        y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 # compute new function values
                 y[:,n] =f(y[:,:n])
                 idx = (y[:,n]<=p[:,n])
                 p[idx] = y[idx]
                 
+
+                p = p[np.argsort(p[:,-1])]
+                
+                x_g = p[0,:n]
+                y_g = p[0,-1]
+                x_path = np.vstack((x_path,x_g))
+                y_path = np.append(y_path,y_g)
+                
                 if np.std(p[:,-1])<tol:
-                    p = p[np.argsort(p[:,-1])]
-                    return p[0,:n],p[0,-1]
+                   
+                    if trajectory:
+                        return x_g,y_g,x_path,y_path
+
+                    else:
+                        return x_g,y_g
+
+
             print('Failed to converger after',max_iter,'iterations')
-            p = p[np.argsort(p[:,-1])]
-            return p[0,:n],p[0,-1]
-        
+            if trajectory:
+                return x_g,y_g,x_path,y_path
+            else:
+                return x_g,y_g
+
         # maximization problem
         elif mode == 'max':
             p = np.zeros((N,n+1))
             p[:,:n] = (l)+(u-l)*np.random.uniform(0,1,(N,n))
             p[:,n] = f(p[:,:n])
-            
+            x_path[0] = p[0,:n]
+            y_path = np.append(y_path,p[0,-1])
             for g in range(max_iter):
                 y = np.zeros((N,n+1))
                 for i in range(N):
@@ -562,24 +726,36 @@ class GlobalOptimizer:
                 idu = np.where((y[:,:n]>u))[0]
 
                 # maintain feasibility
-                if len(idl)>0:
-                    y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility==1:
+                    if len(idl)>0:
+                        y[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                if len(idu)>0:
-                    y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idu)>0:
+                        y[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 # compute new function values
                 y[:,n] =f(y[:,:n])
                 idx = (y[:,n]>=p[:,n])
                 p[idx] = y[idx]
                 
+                p = p[np.argsort(p[:,-1])]
+                x_g = p[-1,:n]
+                y_g = p[-1,-1]
+                x_path = np.vstack((x_path,x_g))
+                y_path = np.append(y_path,y_g)
+
                 if np.std(p[:,-1])<tol:
-                    p = p[np.argsort(p[:,-1])]
-                    return p[-1,:n],p[-1,-1]
+                    
+                    if trajectory:
+                        return x_g,y_g,x_path,y_path
+
+                    else:
+                        return x_g,y_g
                 
             print('Failed to converger after',max_iter,'iterations')
-            p = p[np.argsort(p[:,-1])]
-            return p[-1,:n],p[-1,-1]
-    
+            if trajectory:
+                return x_g,y_g,x_path,y_path
+            else:
+                return x_g,y_g
                 
                     

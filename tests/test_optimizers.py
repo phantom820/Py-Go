@@ -98,7 +98,6 @@ def test_ga():
 
 # test differential evolution
 def test_de():
-
 		opp = op.OptimizationProblem('lambda x:x[:,0]**2-4*x[:,0]+4','min',
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution

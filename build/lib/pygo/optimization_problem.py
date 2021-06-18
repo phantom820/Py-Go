@@ -62,3 +62,17 @@ class OptimizationProblem:
             else:
                 line = line + str(self.lower_constraints[0])+"<= x <=" + str(self.upper_constraints[0])
                 return line
+
+
+class CostProblem:
+
+    def __init__(self,n,f):
+        self.state = 0
+        if type(n)!=type(int):
+            TypeError('dimensions must be int')
+        if callable(f):
+            self.n = n
+            self.objective_function = f
+            self.mode = 'min'
+            self.lower_constraints = np.random.uniform(-1,0,n)
+            self.upper_constraints = np.random.uniform(0.1,1,n)
