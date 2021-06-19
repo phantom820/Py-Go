@@ -5,7 +5,7 @@
 A python global optimization library for single-objective optimization, in which we have inequality constraints charcterized by  constants.
 
 ### Requirements
-- python3.7 or greater
+- python 3.7 or greater
 - pip
 
 ### Installation instructions 
@@ -13,7 +13,8 @@ A python global optimization library for single-objective optimization, in which
 - pip install pygo-0.1.0-py3-none-any.whl 
 
 ### Usage Examples
-for relevant examples see https://github.com/phantom820/Py-Go/tree/master/examples
+- for relevant usage examples see https://github.com/phantom820/Py-Go/tree/master/examples
+- for machine learning related examples see https://github.com/phantom820/Py-Go/tree/master/machine_learning_examples
 
 ### Implemented optimization algorithms
 - particle swarm optimization (PSO)

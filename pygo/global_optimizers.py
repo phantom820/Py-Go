@@ -418,11 +418,11 @@ class GlobalOptimizer:
                 
                 for k in range(0,m,2):
                     # we will pick the pair using this
-                    L = np.zeros(n).astype(int) 
+                    L = np.zeros(2).astype(int) 
                     n1 , n2 = 1,1
                     
                     # tournament selection generate 2 indices and compare
-                    for j in range(n):
+                    for j in range(2):
                         while n1==n2:
                             n1 = int(np.random.uniform(0,1)*N)
                             n2 = int(np.random.uniform(0,1)*N)
@@ -437,7 +437,7 @@ class GlobalOptimizer:
                     # now do the crossing over
                     alpha = -1/2+(2)*np.random.uniform(0,1,n)
                     beta = -1/2+(2)*np.random.uniform(0,1,n)
-                    
+                  
                     x = alpha*(p[L[0],:n])+(1-alpha)*(p[L[1],:n])
                     y = (1-beta)*(p[L[0],:n])+beta*(p[L[1],:n])
                     
@@ -519,7 +519,7 @@ class GlobalOptimizer:
                     n1 , n2 = 1,1
                     
                     # tournament selection generate 2 indices and compare
-                    for j in range(n):
+                    for j in range(2):
                         while n1==n2:
                             n1 = int(np.random.uniform(0,1)*N)
                             n2 = int(np.random.uniform(0,1)*N)
