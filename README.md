@@ -16,6 +16,10 @@ A python global optimization library for single-objective optimization, in which
 - for relevant usage examples see https://github.com/phantom820/Py-Go/tree/master/examples
 - for machine learning related examples see https://github.com/phantom820/Py-Go/tree/master/machine_learning_examples
 
+### Note 
+With use with machine learning models a callable cost function must be implemented which will return the results of evaluating the function at a specified number of solutions , that is it accepts a 2d array (m,d) where m is the number of candidate solutions of dimension d. See 
+https://github.com/phantom820/Py-Go/blob/master/machine_learning_examples/models.py for example how to implement.
+
 ### Implemented optimization algorithms
 - particle swarm optimization (PSO)
 - genetic algorithm (GA)
