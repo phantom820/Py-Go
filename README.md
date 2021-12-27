@@ -9,7 +9,7 @@ A python global optimization library for single-object optimization of continuou
 - genetic algorithm (GA)
 - differential evolution (DE)
 
-The implementation of the above algorithms is based on the material that can be found here
+The implementation of the above algorithms is based on the material that can be found here https://github.com/phantom820/Py-Go/tree/master/references
  
 ### Installation instructions
 Note it is recommended that you create a virtual env for installing. 
@@ -20,6 +20,11 @@ Note it is recommended that you create a virtual env for installing.
 
 ### Usage Examples
 - for relevant usage examples see https://github.com/phantom820/Py-Go/tree/master/examples
+
+### Further Extensions
+- More sophisticated implementations of the above algorithms
+- Addition of other global optimization methods
+- Extending to combinatorial optimization problems
 
 
 
