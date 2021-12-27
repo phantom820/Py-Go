@@ -4,7 +4,7 @@ import numpy as np
 
 # test pso
 def test_pso():
-		opp = op.OptimizationProblem('lambda x:x[:,0]**2-4*x[:,0]+4','min',
+		opp = op.OptimizationProblem('min',lambda x:x[:,0]**2-4*x[:,0]+4,
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution
 		global_optimizer = go.GlobalOptimizer()
@@ -20,7 +20,7 @@ def test_pso():
 		assert abs(x_star_true-x_star[0])<=1e-1
 
 		# check pso with 2d rosenbrock minimization problem	
-		opp = op.OptimizationProblem('lambda x:(1-x[:,0])**2 + 100*(x[:,1]-x[:,0]**2)**2','min',
+		opp = op.OptimizationProblem('min',lambda x:(1-x[:,0])**2 + 100*(x[:,1]-x[:,0]**2)**2,
                               [-5,-5],[10,10])
 
 		global_optimizer = go.GlobalOptimizer()
@@ -34,7 +34,7 @@ def test_pso():
 # test adaptive pso
 def test_adaptive_pso():
 
-		opp = op.OptimizationProblem('lambda x:x[:,0]**2-4*x[:,0]+4','min',
+		opp = op.OptimizationProblem('min',lambda x:x[:,0]**2-4*x[:,0]+4,
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution
 		global_optimizer = go.GlobalOptimizer()
@@ -54,7 +54,7 @@ def test_adaptive_pso():
 		assert err<=1e-1
 
 		# check pso with 2d rosenbrock minimization problem	
-		opp = op.OptimizationProblem('lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1','min',
+		opp = op.OptimizationProblem('min',lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1,
                               [-1.5,-3],[4,4])
 
 		global_optimizer = go.GlobalOptimizer()
@@ -67,7 +67,7 @@ def test_adaptive_pso():
 # test genetic algorithm
 def test_ga():
 
-		opp = op.OptimizationProblem('lambda x:x[:,0]**2-4*x[:,0]+4','min',
+		opp = op.OptimizationProblem('min',lambda x:x[:,0]**2-4*x[:,0]+4,
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution
 		global_optimizer = go.GlobalOptimizer()
@@ -86,7 +86,7 @@ def test_ga():
 		assert err<=1e-1
 
 		# check pso with 2d rosenbrock minimization problem	
-		opp = op.OptimizationProblem('lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1','min',
+		opp = op.OptimizationProblem('min',lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1,
                               [-1.5,-3],[4,4])
 
 		global_optimizer = go.GlobalOptimizer()
@@ -98,7 +98,7 @@ def test_ga():
 
 # test differential evolution
 def test_de():
-		opp = op.OptimizationProblem('lambda x:x[:,0]**2-4*x[:,0]+4','min',
+		opp = op.OptimizationProblem('min',lambda x:x[:,0]**2-4*x[:,0]+4,
                               [0],[6])
 		# check pso with given 1d minimization problem we should be close to true solution
 		global_optimizer = go.GlobalOptimizer()
@@ -117,7 +117,7 @@ def test_de():
 		assert err<=1e-1
 
 		# check pso with 2d rosenbrock minimization problem	
-		opp = op.OptimizationProblem('lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1','min',
+		opp = op.OptimizationProblem('min',lambda x:np.sin(x[:,0]+x[:,1])+(x[:,0]-x[:,1])**2-1.5*x[:,0]+2.5*x[:,1]+1,
                               [-1.5,-3],[4,4])
 
 		global_optimizer = go.GlobalOptimizer()
