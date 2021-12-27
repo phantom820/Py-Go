@@ -24,9 +24,11 @@ class LogisticRegression:
         self.X_train = X.copy()
         self.y_train = y.copy()
         self.d = len(X[0])
-       
+        lower_constraints = np.random.uniform(-1,0,self.d)
+        upper_constraints = np.random.uniform(0,1,self.d)
         global_optimizer = go.GlobalOptimizer()
-        p = op.CostProblem(self.d,self.cost_function)
+        p = op.OptimizationProblem('min',self.cost_function,lower_constraints,upper_constraints,
+                                  feasibility=False)
         
         # default params all algorithms
         w = 0.6

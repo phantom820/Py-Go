@@ -30,10 +30,11 @@ class GlobalOptimizer:
         
 
         n = optimization_problem.n
-        l = optimization_problem.lower_constraints
-        u = optimization_problem.upper_constraints
         f = optimization_problem.f
         mode = optimization_problem.mode
+        l = optimization_problem.lower_constraints
+        u = optimization_problem.upper_constraints
+        feasibility = optimization_problem.feasibility
         t = 0
         
         # minimization problem
@@ -60,15 +61,16 @@ class GlobalOptimizer:
                 v = w*v+c1*r1*(p[:,:n]-x[:,:n])+c1*r2*(g_k-x[:,:n])
                 x[:,:n] = x[:,:n]+v
 
-                idl = np.where((x[:,:n]<l))[0]
-                idu = np.where((x[:,:n]>u))[0]
-
             
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility:
+                    idl = np.where((x[:,:n]<l))[0]
+                    idu = np.where((x[:,:n]>u))[0]
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 x[:,n] = f(x[:,:n])
                 
@@ -154,6 +156,7 @@ class GlobalOptimizer:
         u = optimization_problem.upper_constraints
         f = optimization_problem.f
         mode = optimization_problem.mode
+        feasibility = optimization_problem.feasibility
         
         w = np.linspace(w_init,0.4,max_iter)
         t = 0
@@ -183,16 +186,16 @@ class GlobalOptimizer:
                 v = w[t]*v+c1*r1*(p[:,:n]-x[:,:n])+c1*r2*(g_k-x[:,:n])
                 x[:,:n] = x[:,:n]+v
 
-                idl = np.where((x[:,:n]<l))[0]
-                idu = np.where((x[:,:n]>u))[0]
-
                 # maintain feasibility
-            
-                if len(idl)>0:
-                    x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                if feasibility:
 
-                if len(idu)>0:
-                    x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                    idl = np.where((x[:,:n]<l))[0]
+                    idu = np.where((x[:,:n]>u))[0]
+                    if len(idl)>0:
+                        x[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+
+                    if len(idu)>0:
+                        x[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                 x[:,n] = f(x[:,:n])
 
@@ -264,6 +267,7 @@ class GlobalOptimizer:
         u = optimization_problem.upper_constraints
         f = optimization_problem.f
         mode = optimization_problem.mode
+        feasibility = optimization_problem.feasibility
         
         p = np.zeros((N,n+1))
         p[:,:n] = l+(u-l)*np.random.uniform(0,1,(N,n))
@@ -327,16 +331,17 @@ class GlobalOptimizer:
                     c[k,:n] = x
                     c[k+1,:n] = y
                     
-                    # infeasible solutions
-                    idl = np.where((c[:,:n]<l))[0]
-                    idu = np.where((c[:,:n]>u))[0]
+                    if feasibility:
+                        # infeasible solutions
+                        idl = np.where((c[:,:n]<l))[0]
+                        idu = np.where((c[:,:n]>u))[0]
 
-                    # maintain feasibility
-                    if len(idl)>0:
-                        c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
+                        # maintain feasibility
+                        if len(idl)>0:
+                            c[idl,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idl),n))
 
-                    if len(idu)>0:
-                        c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
+                        if len(idu)>0:
+                            c[idu,:n] = (l)+(u-l)*np.random.uniform(0,1,(len(idu),n))
 
                     c[k:k+2,n] = f(c[k:k+2,:n])            
 
